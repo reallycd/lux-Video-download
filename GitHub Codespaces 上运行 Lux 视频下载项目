@@ -1,0 +1,79 @@
+在 GitHub Codespaces 上运行 Lux 视频下载项目
+根据您提供的项目信息（Lux - 用Go编写的视频下载工具），我将详细说明如何在 GitHub Codespaces 中配置和运行该项目。
+方法一：使用 devcontainer.json 自动配置（推荐）
+1. Fork 项目到你的仓库
+首先，访问 Lux 的 GitHub 仓库（"github.com/iawia002/lux"），点击右上角的 Fork 按钮，在你的账号下创建副本。
+2. 创建开发容器配置
+在项目根目录下创建 ".devcontainer" 文件夹，其中包含 "devcontainer.json" 文件，配置如下：
+{
+  "name": "Lux Development Environment",
+  "image": "mcr.microsoft.com/devcontainers/go:1.21",
+  "features": {
+    "ghcr.io/devcontainers/features/ffmpeg:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go"
+      ]
+    }
+  },
+  "postCreateCommand": "go mod tidy",
+  "forwardPorts": []
+}
+这个配置文件：
+- 使用预装 Go 1.21 的官方开发容器镜像
+- 通过 features 自动安装 FFmpeg（这是 Lux 的依赖，用于合并音频和视频文件）
+- 自动安装 Go 扩展
+- 容器创建后运行 "go mod tidy" 下载依赖
+3. 启动 Codespaces
+1. 提交并推送 ".devcontainer" 文件夹到你的仓库
+2. 进入你的 Fork 仓库主页
+3. 点击绿色的 Code 按钮，切换到 Codespaces 标签页
+4. 点击 Create codespace on main
+方法二：使用默认容器手动安装
+如果不想创建配置文件，也可以直接使用 Codespaces 的默认环境，然后手动安装依赖：
+1. 创建 Codespace
+1. 进入 Lux 项目仓库（建议先 Fork）
+2. 点击 Code → Codespaces → Create codespace on main
+2. 安装依赖
+在 Codespace 的终端中执行以下命令：
+# 安装 FFmpeg（Ubuntu 环境）
+sudo apt-get update
+sudo apt-get install -y ffmpeg
+
+# 验证安装
+ffmpeg -version
+3. 编译安装 Lux
+# 使用 go install 安装
+go install github.com/iawia002/lux@latest
+
+# 或者从源码编译
+git clone https://github.com/iawia002/lux.git
+cd lux
+go build -o lux main.go
+4. 验证安装
+# 查看版本
+lux --version
+
+# 查看帮助
+lux --help
+使用示例
+安装完成后，就可以在 Codespace 中使用 Lux 下载视频了：
+# 下载单个视频
+lux https://www.bilibili.com/video/BV1GJ411x7
+
+# 查看可用画质
+lux -i https://www.bilibili.com/video/BV1GJ411x7
+
+# 下载指定画质（默认最高画质）
+lux -f 1080p https://www.bilibili.com/video/BV1GJ411x7
+
+# 下载整个播放列表
+lux -p https://www.bilibili.com/video/BV1GJ411x7
+重要提示
+1. FFmpeg 的作用：FFmpeg 不影响下载过程，只影响最终文件的合并。没有 FFmpeg 时，Lux 会下载分离的音频和视频文件。
+2. 存储空间：Codespaces 默认提供 30GB 存储空间，下载大型视频时请注意空间管理。
+3. 端口转发：Lux 是命令行工具，不需要端口转发。但如果需要开发 Web 界面，可以在 devcontainer.json 中配置 "forwardPorts"。
+4. 持久化代码：记得将你的代码提交并推送到 GitHub，否则 Codespace 停止后更改会丢失。
+建议使用方法一的 devcontainer.json 方式，这样每次创建 Codespace 时环境都会自动配置好，无需手动操作。
